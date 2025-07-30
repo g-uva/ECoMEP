@@ -1,5 +1,7 @@
 # 🌍 Edge-Cloud Continuum Multi-Level Predictive Framework (GreenDIGIT project)
 
+>**Disclaimer**: the information on this README is still temporary. The tools, architecture and other specifications are subject to change.
+
 > Part of GreenDIGIT WP6.2 — Predictive AI for Federated Energy-Aware Workflows  
 > Developed in collaboration with SoBigData RI, IFCA, DIRAC, and GreenDIGIT RIs and partners.
 
@@ -87,3 +89,10 @@ Gonçalo Ferreira – UvA Researcher - WP6.2 Developer
 - [ ] [Collaborators, Partners]
 
 Supported by GreenDIGIT, SoBigData RI, IFCA, DIRAC, and CNR.
+
+## Contact
+For questions, integration requests or metric schema definitions, contact:
+
+GreenDIGIT WP6.2 Team
+📧 contact@greendigit.eu
+🌐 greendigit.eu
