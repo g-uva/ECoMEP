@@ -45,7 +45,7 @@ Deployed as part of the **GreenDIGIT WP6.2** research activities, this module in
 
 ## Folder Structure
 
-```bash
+<!-- ```bash
 .
 ├── ingestion/             # Metric ingestion and connectors
 ├── preprocessing/         # Data cleaning and transformation
@@ -57,6 +57,21 @@ Deployed as part of the **GreenDIGIT WP6.2** research activities, this module in
 ├── Dockerfile
 ├── requirements.txt
 └── README.md
+``` -->
+
+### New version
+```bash
+EdgeCloudPredictive/
+├── ingestion/                # Kafka consumers, schema
+├── preprocessing/            # Feature builders, GreatExp suites
+├── training/                 # PyTorch/Sklearn code, MLflow configs
+├── inference/                # FastAPI server, ONNX / TFLite loaders
+├── deployment/               # Helm charts, Dockerfiles
+│   ├── helm/                 # Chart for Training & Inference services
+│   └── gha-workflows/        # CI/CD YAML
+├── crate/                    # RO-Crate metadata, licences, schema
+├── ro-crate-metadata.json
+└── notebooks/                # EDA & experiment design
 ```
 
 ## Outputs and Publications
