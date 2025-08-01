@@ -48,20 +48,20 @@ stages:
       nfiles: 2
     - path: scripts/train.py
       hash: md5
-      md5: f0d6dd7ddb5f4a5ab9a8d0708925038f
-      size: 1221
+      md5: 1e2bc29ae8fffa692205583ee6d98792
+      size: 1263
       isexec: true
     params:
       params.yaml:
         model.learning_rate: 0.05
-        model.max_depth: 3
-        model.n_estimators: 200
+        model.max_depth: 6
+        model.n_estimators: 300
     outs:
     - path: metrics/metrics.json
       hash: md5
-      md5: 97f479070ddcb91f14d38721ee3faf8a
+      md5: fd88d200b6c354fdec27439fd1c721e8
       size: 59
     - path: models/baseline.joblib
       hash: md5
-      md5: 1902bc5ea4ed19ae69361879f03eb06a
-      size: 295534
+      md5: edebeac406850e32000725c4c6a55088
+      size: 716894
