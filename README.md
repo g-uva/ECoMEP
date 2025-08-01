@@ -5,28 +5,6 @@
 > Part of GreenDIGIT WP6.2 — Predictive AI for Federated Energy-Aware Workflows  
 > Developed in collaboration with SoBigData RI, IFCA, DIRAC, and GreenDIGIT RIs and partners.
 
-### To-do
-- [ ] Add default remote for data and artefacts; example:
-```sh
-dvc remote add -d storage gdrive://1n_SyOF_LvzzwqAe6-YPa-PnPR4kvPCE1
-dvc push
-dvc remote modify storage gdrive_use_service_account true
-```
-For the moment the data is manually inputted.
-
-This authentication must be somehow integrated with the GCS:
-```yaml
-steps:
-  - uses: actions/checkout@v4
-  - uses: iterative/setup-dvc@v1
-  - run: dvc pull    # fetch data/model cache
-  - run: dvc repro   # fail if pipeline breaks
-  - run: dvc metrics show
-```
-The authentication for the bucket must also be available at Github CI Actions.
-
----
-
 
 ## Overview
 
