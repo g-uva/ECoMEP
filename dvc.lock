@@ -29,12 +29,12 @@ stages:
       nfiles: 744
     - path: scripts/featurise.py
       hash: md5
-      md5: 390a9caa7ed4abcf66a4fe230125befd
-      size: 2170
+      md5: e3f854d0b321c44180b980c2455ea6c8
+      size: 1003
       isexec: true
     outs:
     - path: data/features
       hash: md5
-      md5: d751713988987e9331980363e24189ce.dir
-      size: 0
-      nfiles: 0
+      md5: 7c6d0cb0332ed6b5fd83bcdcbe969fc6.dir
+      size: 5711582
+      nfiles: 2
