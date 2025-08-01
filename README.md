@@ -5,6 +5,14 @@
 > Part of GreenDIGIT WP6.2 — Predictive AI for Federated Energy-Aware Workflows  
 > Developed in collaboration with SoBigData RI, IFCA, DIRAC, and GreenDIGIT RIs and partners.
 
+### To-do
+- [ ] Add default remote for data and artefacts; example:
+```sh
+dvc remote add -d storage gdrive://1n_SyOF_LvzzwqAe6-YPa-PnPR4kvPCE1
+dvc push
+dvc remote modify storage gdrive_use_service_account true
+```
+
 ## Overview
 
 This framework enables **real-time predictive modelling** across **Edge–Fog–Cloud infrastructures** using **multi-level machine learning pipelines**. It ingests environmental and performance metrics (e.g. energy, CPU usage, workload profiles) from **distributed clusters and IoT devices**, processes them, and trains models to **forecast resource usage, network load, and system performance**.
