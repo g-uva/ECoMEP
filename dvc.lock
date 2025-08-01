@@ -1,0 +1,21 @@
+schema: '2.0'
+stages:
+  ingest:
+    cmd: python scripts/ingest.py data/raw data/clean
+    deps:
+    - path: data/raw
+      hash: md5
+      md5: 470ec234b4cfd52f3bde4d205660af41.dir
+      size: 3497724457
+      nfiles: 753
+    - path: scripts/ingest.py
+      hash: md5
+      md5: ece30afc894567c7334ed4f403e689e7
+      size: 1088
+      isexec: true
+    outs:
+    - path: data/clean
+      hash: md5
+      md5: 194eb69cafe5661f78a42b56140be704.dir
+      size: 804358311
+      nfiles: 744
