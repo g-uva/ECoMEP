@@ -1,15 +1,11 @@
 #!/usr/bin/env python3
-"""
-Tiny placeholder that just copies the raw CSV/Parquet files
-into the clean/ directory so the next stage has something to read.
-"""
+import sys, shutil, pathlib
 
-import shutil, sys, pathlib
+src, dst = map(lambda p: pathlib.Path(p).resolve(), sys.argv[1:3])
 
-src = pathlib.Path(sys.argv[1])      # e.g. data/raw
-dst = pathlib.Path(sys.argv[2])      # e.g. data/clean
-dst.mkdir(parents=True, exist_ok=True)
+for f in src.rglob("*.csv"):                 # walk sub-folders
+    out = dst / f.relative_to(src)           # preserve layout
+    out.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(f, out)
 
-for f in src.glob("*.*"):            # copy everything for now
-    shutil.copy2(f, dst / f.name)
-print(f"Copied {len(list(dst.iterdir()))} files to {dst}")
+print(f"Copied {sum(1 for _ in dst.rglob('*.csv'))} CSV files to {dst}")
