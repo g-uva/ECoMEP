@@ -1,0 +1,25 @@
+stages:
+  ingest:
+    cmd: python scripts/ingest.py data/raw data/clean
+    deps:
+    - data/raw
+    - scripts/ingest.py
+    outs:
+    - data/clean
+  featurise:
+    cmd: python scripts/featurise.py data/clean data/features
+    deps:
+    - data/clean
+    - scripts/featurise.py
+    outs:
+    - data/features
+  train:
+    cmd: python scripts/train.py data/features models/lstm.onnx
+    deps:
+    - data/features
+    - scripts/train.py
+    params:
+    - model.epochs
+    - model.hidden
+    outs:
+    - models/lstm.onnx

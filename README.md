@@ -12,6 +12,7 @@ dvc remote add -d storage gdrive://1n_SyOF_LvzzwqAe6-YPa-PnPR4kvPCE1
 dvc push
 dvc remote modify storage gdrive_use_service_account true
 ```
+For the moment the data is manually inputted.
 
 ## Overview
 
