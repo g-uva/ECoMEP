@@ -14,6 +14,20 @@ dvc remote modify storage gdrive_use_service_account true
 ```
 For the moment the data is manually inputted.
 
+This authentication must be somehow integrated with the GCS:
+```yaml
+steps:
+  - uses: actions/checkout@v4
+  - uses: iterative/setup-dvc@v1
+  - run: dvc pull    # fetch data/model cache
+  - run: dvc repro   # fail if pipeline breaks
+  - run: dvc metrics show
+```
+The authentication for the bucket must also be available at Github CI Actions.
+
+---
+
+
 ## Overview
 
 This framework enables **real-time predictive modelling** across **Edge–Fog–Cloud infrastructures** using **multi-level machine learning pipelines**. It ingests environmental and performance metrics (e.g. energy, CPU usage, workload profiles) from **distributed clusters and IoT devices**, processes them, and trains models to **forecast resource usage, network load, and system performance**.

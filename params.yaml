@@ -1,9 +1,9 @@
 model:
-  n_estimators: 200
-  max_depth: 3
+  n_estimators: 300
+  max_depth: 4
   learning_rate: 0.05
 data:
-  test_size: 0.2        # proportion of last‐period rows held out
+  test_size: 0.2
 features:
-  lags: [1, 2, 3, 6]    # hours to lag for autocorrelation
+  lags: [1, 2, 3, 6]
 target: rapl_power_total_watts

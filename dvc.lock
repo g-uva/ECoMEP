@@ -38,3 +38,30 @@ stages:
       md5: 7c6d0cb0332ed6b5fd83bcdcbe969fc6.dir
       size: 5711582
       nfiles: 2
+  train:
+    cmd: python scripts/train.py data/features models/baseline.joblib
+    deps:
+    - path: data/features
+      hash: md5
+      md5: 7c6d0cb0332ed6b5fd83bcdcbe969fc6.dir
+      size: 5711582
+      nfiles: 2
+    - path: scripts/train.py
+      hash: md5
+      md5: f0d6dd7ddb5f4a5ab9a8d0708925038f
+      size: 1221
+      isexec: true
+    params:
+      params.yaml:
+        model.learning_rate: 0.05
+        model.max_depth: 3
+        model.n_estimators: 200
+    outs:
+    - path: metrics/metrics.json
+      hash: md5
+      md5: 97f479070ddcb91f14d38721ee3faf8a
+      size: 59
+    - path: models/baseline.joblib
+      hash: md5
+      md5: 1902bc5ea4ed19ae69361879f03eb06a
+      size: 295534
