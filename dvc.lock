@@ -19,3 +19,22 @@ stages:
       md5: 194eb69cafe5661f78a42b56140be704.dir
       size: 804358311
       nfiles: 744
+  featurise:
+    cmd: python scripts/featurise.py data/clean data/features
+    deps:
+    - path: data/clean
+      hash: md5
+      md5: 194eb69cafe5661f78a42b56140be704.dir
+      size: 804358311
+      nfiles: 744
+    - path: scripts/featurise.py
+      hash: md5
+      md5: 390a9caa7ed4abcf66a4fe230125befd
+      size: 2170
+      isexec: true
+    outs:
+    - path: data/features
+      hash: md5
+      md5: d751713988987e9331980363e24189ce.dir
+      size: 0
+      nfiles: 0
