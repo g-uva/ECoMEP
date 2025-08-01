@@ -1,4 +1,4 @@
-# 🌍 ECoMEP - Edge-Cloud Continuum Multi-Level ML Energy Prediction Framework (GreenDIGIT project)
+# 🌱🌍♻️ ECoMEP - Edge-Cloud Continuum Multi-Level ML Energy Prediction Framework (GreenDIGIT project)
 
 >**Disclaimer**: the information on this README is still temporary. The tools, architecture and other specifications are subject to change.
 
