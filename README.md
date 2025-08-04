@@ -14,9 +14,26 @@ Deployed as part of the **GreenDIGIT WP6.2** research activities, this module in
 
 - [WP6.1 Environmental Metric Publication System](#)
 - [WP6.3 Energy-Aware Brokering Framework](#)
+- UTH real-time IoT metrics infrastructure, data and workloads
 - SoBigData RI metrics ecosystem
 - IFCA and DIRAC records infrastructure
-- (Future plans): Testbed experimentation (e.g., Chamaleon/FABRIC/GD)
+
+### To-dos (create tickets)
+- [ ] Testbed implementation IoT with UTH
+- [ ] DVC assets imported from remote storage (GDrive or AWS)
+- ML model is quite simple. Things to improve.
+  - [ ] XGBoost, CatBoost (or other SoTA gradient boost tool-algo)
+  - [ ] Deep Learning: Convolutional Neural Network (LSTM, Temporal Convolution, Transformer) with PyTorch or TensorFlow
+  - [ ] Use `scikit-learn-onnx` for more adaptability to edge-devices
+  - [ ] Integrate MQTT and/or Prometheus for edge-optimised messaging telemetry between devices (for the Edge)
+- [ ] Metrics' ingestion: batch + real-time streaming (Kafka)
+
+
+---
+
+## Current Features
+- Ingest, Featurise and Train stages in-built as a pipeline (with DVC tracking).
+- FastAPI server `/predict` endpoint with a `{"power_forecast":<number>}` result.
 
 ---
 
@@ -67,6 +84,8 @@ EdgeCloudPredictive/
 ├── preprocessing/            # Feature builders, GreatExp suites
 ├── training/                 # PyTorch/Sklearn code, MLflow configs
 ├── inference/                # FastAPI server, ONNX / TFLite loaders
+├── scripts/                  # ML ingestion, featurise + training steps
+├── server/                   # Containerised FastAPI server for HTTP prediction request
 ├── deployment/               # Helm charts, Dockerfiles
 │   ├── helm/                 # Chart for Training & Inference services
 │   └── gha-workflows/        # CI/CD YAML

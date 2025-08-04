@@ -31,6 +31,6 @@ for src in raw_dir.rglob("*.csv"):
     dst.parent.mkdir(parents=True, exist_ok=True)
 
     df.to_parquet(dst)
-    print(f"✔︎ {dst}   rows={len(df)}")
+    print(f"{dst}   rows={len(df)}")
 
 print("Ingestion completed.")
