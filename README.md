@@ -170,4 +170,18 @@ faas-cli build  -f stack.yaml
 # with your own.
 docker tag echo:latest $YOUR_USERNAME/echo:latest
 docker push $YOUR_USERNAME/echo:latest
+
+# Just to test if the cluster is correctly set:
+kubectl get pods -n openfaas
+kubectl get svc -n openfaas
+
+# Just for dev, port-forward
+kubectl port-forward -n openfaas svc/gateway 8080:8080
+# This will lock your terminal. To test this, you must do so from other terminal.
+```
+
+3. Finally, the first curl:
+```sh
+curl -X POST http://localhost:8080/function/echo
+> Hello World!%
 ```
