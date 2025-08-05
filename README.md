@@ -130,3 +130,44 @@ For questions, integration requests or metric schema definitions, contact:
 GreenDIGIT WP6.2 Team
 📧 contact@greendigit.eu
 🌐 greendigit.eu
+
+---
+
+### Notes Serverless (temporary)
+Followed the [Official Golang-Http OpenFaaS](https://docs.openfaas.com/languages/go/#add-your-own-sub-modules) documentation to set the first experiment.
+
+1. First we must set the Kubernetes environment. OpenFaaS works with automatic deployment to a Kubernetes cluster with pre-defined namespaces `openfaas` and `openfaas-fn`.
+
+```sh
+# Helm, Kubernetes (kubectl), arkade and faas-cli must be installed.
+kubectl create ns openfaas
+kubectl create ns openfaas-fn
+
+helm repo add openfaas https://openfaas.github.io/faas-netes
+helm repo update
+
+helm upgrade openfaas --install openfaas/openfaas \
+  --namespace openfaas \
+  --set gateway.directFunctions=true \
+  --set generateBasicAuth=true
+
+# port-forward (dev only)
+kubectl -n openfaas port-forward svc/gateway 8080:8080 &
+
+```
+
+2. Now create the template, alter the `stack.yaml` with the image from my `goncaloferreirauva` DockerHub repository. There are some workarounds needed for the "default" commands from `faas-cli`.
+```sh
+# Install templates and handler function.
+faas-cli template store pull golang-middleware
+faas-cli new --lang golang-middleware echo
+
+# This will build the Docker image, but not push it.
+faas-cli build  -f stack.yaml
+
+# We must add a tag to the echo Docker image and push
+# to your own DockerHub repo. Substitute $YOUR_USERNAME
+# with your own.
+docker tag echo:latest $YOUR_USERNAME/echo:latest
+docker push $YOUR_USERNAME/echo:latest
+```
