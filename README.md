@@ -28,7 +28,6 @@ Deployed as part of the **GreenDIGIT WP6.2** research activities, this module in
   - [ ] Integrate MQTT and/or Prometheus for edge-optimised messaging telemetry between devices (for the Edge)
 - [ ] Metrics' ingestion: batch + real-time streaming (Kafka)
 
-
 ---
 
 ## Current Features
