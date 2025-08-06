@@ -1,0 +1,13 @@
+functions:
+  resize:
+    image: ghcr.io/openfaas/resize:latest
+    labels:
+      com.openfaas.scale.min: "1"
+    annotations:
+      prometheus.io.scrape: "true"
+      prometheus.io.port: "8082"
+    fprocess: "python3 resize.py"
+    sidecar:
+      name: power-exporter
+      image: quay.io/prometheus/node-exporter:v1.8.1
+      args: ["--collector.textfile.directory=/var/power"]
