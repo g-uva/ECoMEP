@@ -57,11 +57,49 @@ helm upgrade -i openfaas openfaas/openfaas \
 
 # This is what is outputted after we run the command before.
 export PASSWORD="$(kubectl -n openfaas get secret basic-auth -o jsonpath="{.data.basic-auth-password}" | base64 --decode)"
-# PASSWORD=$(kubectl --context=k3d-edge \
-#     -n openfaas get secret basic-auth -o \
-#     jsonpath="{.data.basic-auth-password}" | base64 -d)
+
+# Password to login into open-faas
+export PASSWORD_FAAS=$(kubectl --context=k3d-edge \
+    -n openfaas get secret basic-auth -o \
+    jsonpath="{.data.basic-auth-password}" | base64 -d)
 
 
-# To run Docker:
-docker build -t workload-producer:latest .
+# To run Docker with the Workload image:
+docker build -t goncaloferreirauva/workload-faas:latest -f ./Dockerfile.work .
 docker run --rm -e PASSWORD=$PASSWORD goncaloferreirauva/workload-faas:latest # This is assuming that the export PASSWORD previous command was ran.
+
+# Scheduler image run
+docker build -t goncaloferreirauva/sched-faas:latest -f ./Dockerfile.sched .
+docker run -d --name scheduler --network host -e PASS=$PASSWORD goncaloferreirauva/sched-faas:latest
+
+# Log into open-faas
+faas-cli login --gateway http://localhost:31110 --password="$PASSWORD_FAAS"
+
+# Build and deploy faas-cli and define gateway
+faas-cli build -f stack.yaml
+faas-cli deploy -f stack.yaml --gateway http://localhost:31110
+
+
+# 1) All three K3d clusters should show the core pods running
+kubectl --context k3d-edge   get pods -A
+kubectl --context k3d-fog    get pods -A
+kubectl --context k3d-cloud  get pods -A
+
+# Look for: gateway, queue-worker, prometheus (openfaas)  +  resize (openfaas-fn)
+
+# 2) OpenFaaS gateways reachable?
+curl -s http://localhost:31110/system/functions   # edge
+curl -s http://localhost:31120/system/functions   # fog
+curl -s http://localhost:31130/system/functions   # cloud
+
+# 3) Function replicas & invocation counts
+faas-cli list --gateway http://localhost:31110   # edge
+faas-cli list --gateway http://localhost:31120   # fog
+faas-cli list --gateway http://localhost:31130   # cloud
+
+# 4) Scheduler & workload containers running locally
+docker ps --format '{{.Names}}' | grep -E 'scheduler|workload'
+
+# 5) Queue-worker processing events (edge example)
+kubectl --context k3d-edge logs deploy/queue-worker -n openfaas --tail=5
+

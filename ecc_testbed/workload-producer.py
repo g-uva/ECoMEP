@@ -1,6 +1,7 @@
 # workload-producer.py
 import os, random, requests, json, time
-GWS = ["http://localhost:31110", "http://localhost:31120", "http://localhost:31130"]
+# TODO: it must be substituted by Localhost if ran locally. Docker is used for in-cluster network calls.
+GWS = ["http://host.docker.internal:31110", "http://host.docker.internal:31120", "http://host.docker.internal:31130"]
 PW  = os.getenv("PASSWORD")
 AUTH= ("admin", PW)
 
