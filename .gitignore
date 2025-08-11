@@ -3,3 +3,4 @@ template/
 bin
 lib
 pyvenv.cfg
+include

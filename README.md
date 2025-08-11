@@ -33,6 +33,32 @@ Deployed as part of the **GreenDIGIT WP6.2** research activities, this module in
 ## Current Features
 - Ingest, Featurise and Train stages in-built as a pipeline (with DVC tracking).
 - FastAPI server `/predict` endpoint with a `{"power_forecast":<number>}` result.
+- MQTT + Kafka + Flink streaming pipeline
+
+### MQTT + Kafka + Flink pipeline tutorial (development)
+1. Install `docker-compose` with all containerised services (MQTT + Kafka)
+```bash
+cd mqtt_kafka_service
+docker compose up -d --build
+```
+This will spin-up several services included in the compose file, including Kafka-UI, MQTT broker/subscriber and a Kafka bridge that ingests that service.
+To see the logs from MQTT and Kafka respectively:
+- `docker logs -f mqtt`
+- `docker logs -f mqtt_to_kafka`
+
+2. To start the synthetic workloads
+```bash
+# Go to the CIM service folder.
+cd cim_service
+
+# If you do not have the environment installed.
+python -m venv .
+source bin/activate
+
+# Inside our environment:
+python metrics_publisher.py
+# From here you should see metrics being recurrently logged.
+```
 
 ---
 
