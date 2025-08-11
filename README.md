@@ -63,8 +63,13 @@ python metrics_publisher.py
 ---
 
 ## Architecture
+### Overview Architecture
+![Overview Architecture](assets/gd_ecomep_overview_architecture.png)
+- [ ] TODO: write description.
 
-- [ ] TODO: copy/paste architecture diagram once it's completed.
+### Data Flow Architecture
+![ECoMEP Data Flow](assets/gd_ecomep_pipeline.png)
+- [ ] TODO: write description.
 
 ## Machine Learning Pipeline
 
@@ -87,6 +92,7 @@ python metrics_publisher.py
 ---
 
 ## Folder Structure
+- [ ] Refactor and write the folder structure in MD here.
 
 <!-- ```bash
 .
@@ -102,7 +108,7 @@ python metrics_publisher.py
 └── README.md
 ``` -->
 
-### New version
+<!-- ### New version
 ```bash
 EdgeCloudPredictive/
 ├── ingestion/                # Kafka consumers, schema
@@ -117,7 +123,7 @@ EdgeCloudPredictive/
 ├── crate/                    # RO-Crate metadata, licences, schema
 ├── ro-crate-metadata.json
 └── notebooks/                # EDA & experiment design
-```
+``` -->
 
 ## Outputs and Publications
 Unified JSON or RO-Crate formatted metrics
