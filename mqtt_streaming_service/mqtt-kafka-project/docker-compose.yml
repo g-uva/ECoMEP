@@ -33,6 +33,7 @@ services:
     networks:
       - mqtt-kafka-network
 
+
 networks:
   mqtt-kafka-network:
     driver: bridge

@@ -1,6 +1,9 @@
 import json, time, random, socket
 import paho.mqtt.client as mqtt
 from pathlib import Path
+import os
+
+# BROKER = os.getenv("BROKER", "mqtt") # from the docker-compose network
 
 ROOT = Path(__file__).resolve().parent
 NODES = json.loads((ROOT / "namespaces.json").read_text())
@@ -9,45 +12,43 @@ BROKER = "localhost"
 PORT = 1883
 TOPIC_BASE = "ecc/metrics"
 
-# Paho 2.x + MQTT v5 + v2 callback API
+# MQTT v3.1.1 + legacy v1 callback API
 client = mqtt.Client(
-    protocol=mqtt.MQTTv5,
-    callback_api_version=mqtt.CallbackAPIVersion.VERSION2,
-    transport="tcp",
+    protocol=mqtt.MQTTv311,
+    callback_api_version=mqtt.CallbackAPIVersion.VERSION1,
 )
-
-# Optional: fail fast if DNS picks IPv6 first on your setup
-# (diagnostic only)
-print("getaddrinfo:", socket.getaddrinfo(BROKER, PORT))
-
-client.enable_logger()  # verbose logs to stdout
+client.enable_logger()
 
 connected = False
 
-def on_connect(client, userdata, flags, reason_code, properties):
+def on_connect(client, userdata, flags, rc):
     global connected
-    print("on_connect reason_code:", reason_code)
-    connected = (int(reason_code) == 0)
+    print("on_connect rc=", rc)
+    connected = (rc == 0)
 
-def on_disconnect(client, userdata, rc, properties=None):
-    print("on_disconnect rc:", rc)
+def on_disconnect(client, userdata, rc):
+    print("on_disconnect rc=", rc)
+
+def on_log(client, userdata, level, buf):
+    print("LOG:", buf)
 
 client.on_connect = on_connect
 client.on_disconnect = on_disconnect
+client.on_log = on_log
+
+print("getaddrinfo:", socket.getaddrinfo(BROKER, PORT))
 
 client.loop_start()
-# If you still hit Errno 49, try connect_async (non-blocking) then wait
 client.connect_async(BROKER, PORT, keepalive=60)
 client.reconnect_delay_set(min_delay=1, max_delay=5)
 
-# Wait for connection (with timeout so we don’t loop forever)
+# Wait for connection with timeout
 deadline = time.time() + 10
 while not connected and time.time() < deadline:
     print("Waiting for MQTT connection...")
     time.sleep(0.2)
-
 if not connected:
-    raise SystemExit("Could not connect to MQTT. Check broker logs and port reachability.")
+    raise SystemExit("No CONNACK — check broker logs while running this script.")
 
 def random_metric(node):
     return {
@@ -62,8 +63,8 @@ def random_metric(node):
 
 while True:
     for node in NODES:
-        metric = random_metric(node)
+        payload = random_metric(node)
         topic = f"{TOPIC_BASE}/{node['NodeID']}"
-        result = client.publish(topic, json.dumps(metric), qos=0, retain=False)
-        print(f"Published to {topic}: rc={result.rc}")
+        r = client.publish(topic, json.dumps(payload), qos=0, retain=False)
+        print(f"Published to {topic}: rc={r.rc}")
     time.sleep(2)
