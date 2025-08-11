@@ -1,2 +1,5 @@
 template/
 .DS_Store
+bin
+lib
+pyvenv.cfg
