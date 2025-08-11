@@ -1,0 +1,82 @@
+[
+  {
+    "Region": "North Netherlands",
+    "Country": "Netherlands",
+    "NodeID": "NL-GRON-EDGE01",
+    "geoLocation": { "lat": 53.2194, "lon": 6.5665 },
+    "network": { "latency_ms": 10, "bandwidth_mbps": 1000 },
+    "energyContext": { "gridAPI": "TenneT", "renewableShare": 0.45 }
+  },
+  {
+    "Region": "Randstad",
+    "Country": "Netherlands",
+    "NodeID": "NL-RAND-EDGE02",
+    "geoLocation": { "lat": 52.3702, "lon": 4.8952 },
+    "network": { "latency_ms": 8, "bandwidth_mbps": 1200 },
+    "energyContext": { "gridAPI": "TenneT", "renewableShare": 0.52 }
+  },
+  {
+    "Region": "Lombardy",
+    "Country": "Italy",
+    "NodeID": "IT-LOMB-EDGE01",
+    "geoLocation": { "lat": 45.4668, "lon": 9.1905 },
+    "network": { "latency_ms": 15, "bandwidth_mbps": 900 },
+    "energyContext": { "gridAPI": "Terna", "renewableShare": 0.38 }
+  },
+  {
+    "Region": "Tuscany",
+    "Country": "Italy",
+    "NodeID": "IT-TUSC-EDGE02",
+    "geoLocation": { "lat": 43.7696, "lon": 11.2558 },
+    "network": { "latency_ms": 18, "bandwidth_mbps": 850 },
+    "energyContext": { "gridAPI": "Terna", "renewableShare": 0.41 }
+  },
+  {
+    "Region": "Budapest",
+    "Country": "Hungary",
+    "NodeID": "HU-BUD-EDGE01",
+    "geoLocation": { "lat": 47.4979, "lon": 19.0402 },
+    "network": { "latency_ms": 12, "bandwidth_mbps": 950 },
+    "energyContext": { "gridAPI": "MAVIR", "renewableShare": 0.29 }
+  },
+  {
+    "Region": "Transdanubia",
+    "Country": "Hungary",
+    "NodeID": "HU-TRAN-EDGE02",
+    "geoLocation": { "lat": 46.253, "lon": 18.2331 },
+    "network": { "latency_ms": 14, "bandwidth_mbps": 800 },
+    "energyContext": { "gridAPI": "MAVIR", "renewableShare": 0.31 }
+  },
+  {
+    "Region": "Madrid",
+    "Country": "Spain",
+    "NodeID": "ES-MAD-EDGE01",
+    "geoLocation": { "lat": 40.4168, "lon": -3.7038 },
+    "network": { "latency_ms": 11, "bandwidth_mbps": 1100 },
+    "energyContext": { "gridAPI": "REE", "renewableShare": 0.54 }
+  },
+  {
+    "Region": "Catalonia",
+    "Country": "Spain",
+    "NodeID": "ES-CAT-EDGE02",
+    "geoLocation": { "lat": 41.3851, "lon": 2.1734 },
+    "network": { "latency_ms": 13, "bandwidth_mbps": 1050 },
+    "energyContext": { "gridAPI": "REE", "renewableShare": 0.57 }
+  },
+  {
+    "Region": "Île-de-France",
+    "Country": "France",
+    "NodeID": "FR-IDF-EDGE01",
+    "geoLocation": { "lat": 48.8566, "lon": 2.3522 },
+    "network": { "latency_ms": 9, "bandwidth_mbps": 1300 },
+    "energyContext": { "gridAPI": "RTE", "renewableShare": 0.36 }
+  },
+  {
+    "Region": "Berlin-Brandenburg",
+    "Country": "Germany",
+    "NodeID": "DE-BEB-EDGE01",
+    "geoLocation": { "lat": 52.5200, "lon": 13.4050 },
+    "network": { "latency_ms": 7, "bandwidth_mbps": 1400 },
+    "energyContext": { "gridAPI": "50Hertz", "renewableShare": 0.60 }
+  }
+]

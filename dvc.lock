@@ -10,8 +10,8 @@ stages:
       nfiles: 753
     - path: scripts/ingest.py
       hash: md5
-      md5: ece30afc894567c7334ed4f403e689e7
-      size: 1088
+      md5: e7024e09c6280712158a008f7fa8d1c0
+      size: 1081
       isexec: true
     outs:
     - path: data/clean
@@ -59,9 +59,9 @@ stages:
     outs:
     - path: metrics/metrics.json
       hash: md5
-      md5: fd88d200b6c354fdec27439fd1c721e8
+      md5: 10a87ac129ef5e333d84695aa34e217a
       size: 59
     - path: models/baseline.joblib
       hash: md5
-      md5: edebeac406850e32000725c4c6a55088
-      size: 716894
+      md5: 281a69f56f90f6fa134002da925ac801
+      size: 481014
