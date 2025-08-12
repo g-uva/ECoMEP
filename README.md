@@ -38,7 +38,7 @@ Deployed as part of the **GreenDIGIT WP6.2** research activities, this module in
 ### MQTT + Kafka + Flink pipeline tutorial (development)
 1. Install `docker-compose` with all containerised services (MQTT + Kafka)
 ```bash
-cd mqtt_kafka_service
+cd mqtt_kafka_service # you should see a docker-compose.yaml if you run ls -la
 docker compose up -d --build
 ```
 This will spin-up several services included in the compose file, including Kafka-UI, MQTT broker/subscriber and a Kafka bridge that ingests that service.
@@ -68,6 +68,15 @@ docker exec -it kafka kafka-topics.sh --bootstrap-server localhost:9092 --list
 docker exec -it kafka /opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list
 docker exec -it kafka /opt/bitnami/kafka/bin/kafka-configs.sh --bootstrap-server localhost:9092 \
   --entity-type topics --entity-name metrics.raw.stream --describe
+
+```
+
+4. Generating metrics (temporary)
+```sh
+# Running it from the cim_service folder (which contains the namespaces.json)
+python generate_synthetic_metrics.py --out synthetic_metrics.ndjson
+# If we want to mimic the "cadence" from the dataset.
+python generate_synthetic_metrics.py --source batch
 
 ```
 
