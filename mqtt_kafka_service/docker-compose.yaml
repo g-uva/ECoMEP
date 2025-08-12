@@ -29,14 +29,14 @@ services:
       - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
       - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092
       - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
-      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
+      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=false
       - ALLOW_PLAINTEXT_LISTENER=yes
     depends_on: [zookeeper]
     ports:
       - "9092:9092"
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "kafka-topics.sh --bootstrap-server localhost:9092 --list >/dev/null 2>&1"]
+      test: ["CMD-SHELL", "/opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list >/dev/null 2>&1"]
       interval: 10s
       timeout: 5s
       retries: 12
@@ -50,7 +50,8 @@ services:
       - ./docker/kafka_streaming/topics.sh:/app/topics.sh:ro
     environment:
       - BOOTSTRAP=kafka:9092
-    entrypoint: ["/bin/bash","-lc","bash /app/topics.sh && echo 'topics initialised' && sleep 1"]
+      - KAFKA_BIN=/opt/bitnami/kafka/bin
+    entrypoint: ["/bin/bash","-lc","bash /app/topics.sh"]
     restart: "no"
 
 

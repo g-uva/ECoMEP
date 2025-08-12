@@ -2,9 +2,10 @@
 set -euo pipefail
 
 BOOTSTRAP="${BOOTSTRAP:-kafka:9092}"
+KAFKA_BIN="${KAFKA_BIN:-/opt/bitnami/kafka/bin}"
 
 create() {
-  kafka-topics.sh --bootstrap-server "$BOOTSTRAP" \
+  "${KAFKA_BIN}/kafka-topics.sh" --bootstrap-server "$BOOTSTRAP" \
     --create --if-not-exists \
     --topic "$1" --partitions "$2" --replication-factor 1 \
     "${@:3}"
@@ -35,3 +36,6 @@ create reference.devices 3 \
   --config cleanup.policy=compact \
   --config min.cleanable.dirty.ratio=0.1 \
   --config segment.ms=3600000
+
+# Show result in logs
+"${KAFKA_BIN}/kafka-topics.sh" --bootstrap-server "$BOOTSTRAP" --list

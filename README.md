@@ -60,6 +60,18 @@ python metrics_publisher.py
 # From here you should see metrics being recurrently logged.
 ```
 
+3. Kafka -> ELT (Flink SQL) -> Iceberg + MinIO
+```sh
+# Some useful command to list Kafka's topics, for debugging.
+docker exec -it kafka kafka-topics.sh --bootstrap-server localhost:9092 --list
+
+docker exec -it kafka /opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list
+docker exec -it kafka /opt/bitnami/kafka/bin/kafka-configs.sh --bootstrap-server localhost:9092 \
+  --entity-type topics --entity-name metrics.raw.stream --describe
+
+```
+
+
 ---
 
 ## Architecture
