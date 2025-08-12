@@ -7,4 +7,4 @@ include
 
 *.jar
 flink-lib
-minio-data
+minio-data/
