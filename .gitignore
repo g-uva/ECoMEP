@@ -4,3 +4,7 @@ bin
 lib
 pyvenv.cfg
 include
+
+*.jar
+flink-lib
+minio-data
