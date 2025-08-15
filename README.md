@@ -36,9 +36,9 @@ Deployed as part of the **GreenDIGIT WP6.2** research activities, this module in
 - MQTT + Kafka + Flink streaming pipeline
 
 ### MQTT + Kafka + Flink pipeline tutorial (development)
-1. Install `docker-compose` with all containerised services (MQTT + Kafka)
+1. Install `docker-compose` with all containerised services (MQTT + Kafka).
 ```bash
-cd mqtt_kafka_service # you should see a docker-compose.yaml if you run ls -la
+cd streaming_service # you should see a docker-compose.yaml if you run ls -la
 docker compose up -d --build
 ```
 This will spin-up several services included in the compose file, including Kafka-UI, MQTT broker/subscriber and a Kafka bridge that ingests that service.
@@ -48,8 +48,8 @@ To see the logs from MQTT and Kafka respectively:
 
 2. To start the synthetic workloads
 ```bash
-# Go to the CIM service folder.
-cd cim_service
+# Go to the synthetic metrics' workload folder.
+cd synthetic_metrics_service
 
 # If you do not have the environment installed.
 python -m venv .
@@ -73,13 +73,26 @@ docker exec -it kafka /opt/bitnami/kafka/bin/kafka-configs.sh --bootstrap-server
 
 4. Generating metrics (temporary)
 ```sh
-# Running it from the cim_service folder (which contains the namespaces.json)
-python generate_synthetic_metrics.py --out synthetic_metrics.ndjson
-# If we want to mimic the "cadence" from the dataset.
-python generate_synthetic_metrics.py --source batch
+# 1) Generate namespaces.json
+python generate_namespaces.py --n 12
+
+# 2a) Use existing namespace.json (no auto-generate nodes) (defaults SourceType=IoT)
+python generate_synthetic_metrics.py --days 1 --freq-mins 3
+
+# 2b) (Optional) autogenerate 12 IoT nodes
+python generate_synthetic_metrics.py --autogen-nodes 12 --days 1 --freq-mins 3
+
+# 3) Publish metrics
+# 3-second fixed cadence, override payload timestamps to "now", IoT only
+PACE_MODE=cadence CADENCE_S=3 OVERRIDE_TS=true SOURCE_TYPE=IoT \
+BROKER=localhost PORT=1883 TOPIC_ROOT=greendigit QOS=1 \
+python metrics_publisher.py
+
+# Or: respect recorded Δts (scaled), keep original timestamps
+PACE_MODE=replay_ts REPLAY_SPEED=2.0 OVERRIDE_TS=false SOURCE_TYPE=IoT \
+python metrics_publisher.py
 
 ```
-
 
 ---
 
