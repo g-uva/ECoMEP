@@ -1,0 +1,9 @@
+# Map possible CIM/raw names to canonical feature names used in the pipeline
+aliases:
+  # # Example mappings — extend to your actual columns:
+  # target: ["target", "power", "power_w", "pwr"]
+  # temperature: ["temperature", "temp", "temperature_c"]
+  # humidity: ["humidity", "hum"]
+  # cpu_util: ["cpu_util", "cpu", "cpu_usage"]
+  # mem_util: ["mem_util", "mem", "memory_usage"]
+  target: ["rapl_power_total_watts", "target", "power", "power_w", "pwr"]

@@ -1,2 +1,11 @@
 kafka-python
 pandas
+xgboost
+torch
+joblib
+scikit-learn
+numpy
+fastapi
+uvicorn
+pyarrow
+pyyaml

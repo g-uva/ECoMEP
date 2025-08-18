@@ -10,9 +10,8 @@ stages:
       nfiles: 753
     - path: scripts/ingest.py
       hash: md5
-      md5: e7024e09c6280712158a008f7fa8d1c0
-      size: 1081
-      isexec: true
+      md5: 4446e94a7a933dff49bb170b075eb439
+      size: 1087
     outs:
     - path: data/clean
       hash: md5
@@ -65,3 +64,27 @@ stages:
       hash: md5
       md5: 281a69f56f90f6fa134002da925ac801
       size: 481014
+  validate_features:
+    cmd: python scripts/validate_features.py
+    deps:
+    - path: data/features/train.parquet
+      hash: md5
+      md5: 4680008a28b964c7d5a94c39923e0221
+      size: 4680027
+    - path: params.yaml
+      hash: md5
+      md5: e3a7b1b480b85b1b3e4b58b111a3b22f
+      size: 160
+    - path: schema/aliases.yaml
+      hash: md5
+      md5: 47b099fb36d8c56cf5e001d7d58d9cb5
+      size: 457
+    - path: scripts/validate_features.py
+      hash: md5
+      md5: 192460a14f61408074bf167613e392e8
+      size: 2384
+    outs:
+    - path: reports/schema_report.json
+      hash: md5
+      md5: 46694e7d8609013b4cbc7d4d6b05f8a7
+      size: 175

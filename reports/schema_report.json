@@ -1,0 +1,10 @@
+{
+  "ok": true,
+  "missing": [],
+  "dtype_issues": [],
+  "range_issues": [],
+  "applied_aliases": {
+    "rapl_power_total_watts": "target"
+  },
+  "schema_version": "unknown"
+}
