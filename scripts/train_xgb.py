@@ -6,6 +6,7 @@ import pandas as pd
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 from xgboost import XGBRegressor
 import yaml
+import inspect
 
 warnings.filterwarnings("ignore")
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -58,8 +59,17 @@ def time_ordered_val_split(df, target, val_frac):
 
 def evaluate(model, X, y):
     pred = model.predict(X)
-    mae  = float(mean_absolute_error(y, pred))
-    rmse = float(mean_squared_error(y, pred, squared=False))
+    # mae  = float(mean_absolute_error(y, pred))
+    # rmse = float(mean_squared_error(y, pred, squared=False))
+    try:
+        from sklearn.metrics import root_mean_squared_error
+        rmse = float(root_mean_squared_error(y, pred))
+    except Exception:
+        from sklearn.metrics import mean_squared_error
+        import numpy as np
+        rmse = float(np.sqrt(mean_squared_error(y, pred)))
+    from sklearn.metrics import mean_absolute_error
+    mae = float(mean_absolute_error(y, pred))
     return mae, rmse
 
 def main():
@@ -103,12 +113,25 @@ def main():
     )
 
     eval_set=[(X_va, y_va)]
+    xgb_es_rounds = xgbp.get("early_stopping_rounds", 50)
+    model.set_params(eval_metric=xgbp.get("eval_metric", "rmse"))
+    fit_kwargs = {"eval_set": eval_set, "verbose": False}
+    sig = inspect.signature(model.fit).parameters
+    try:
+        if "callbacks" in sig:
+            from xgboost.callback import EarlyStopping
+            fit_kwargs["callbacks"] = [EarlyStopping(rounds=xgb_es_rounds, save_best=True)]
+    except Exception:
+        pass
+    
+    if "callbacks" not in fit_kwargs and "early_stopping_rounds" in sig:
+        fit_kwargs["early_stopping_rounds"] = xgb_es_rounds
     model.fit(
-        X_tr, y_tr,
-        eval_set=eval_set,
-        eval_metric=xgbp.get("eval_metric","rmse"),
-        verbose=False,
-        early_stopping_rounds=xgbp.get("early_stopping_rounds", 50),
+        X_tr, y_tr, **fit_kwargs
+        # eval_set=eval_set,
+        # # eval_metric=xgbp.get("eval_metric","rmse"),
+        # verbose=False,
+        # early_stopping_rounds=xgbp.get("early_stopping_rounds", 50),
     )
 
     feats = list(X_tr.columns)

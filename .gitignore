@@ -11,3 +11,7 @@ minio-data/
 
 gen/
 __pycache__
+
+
+data/
+xgb.json

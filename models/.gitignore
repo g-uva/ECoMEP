@@ -1,1 +1,4 @@
 /baseline.joblib
+/xgb.joblib
+/lstm.pt
+/champion.json

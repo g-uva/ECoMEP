@@ -24,7 +24,7 @@ def load_params():
         p = yaml.safe_load(f)
     p.setdefault("seq", {})
     s = p["seq"]
-    s.setdefault("epochs", 20)
+    s.setdefault("epochs", 3)
     s.setdefault("batch_size", 128)
     s.setdefault("hidden_dim", 128)
     s.setdefault("num_layers", 2)
@@ -45,9 +45,21 @@ def eval_metrics(model, X, y):
         preds = []
         for xb, yb in batches(X, y, 4096, shuffle=False):
             preds.append(model(xb.to(DEVICE)).cpu().numpy())
-        pred = np.concatenate(preds)
-    mae  = float(mean_absolute_error(y, pred))
-    rmse = float(mean_squared_error(y, pred, squared=False))
+        pred = np.concatenate(preds) if preds else np.array([])
+    # Guard against any remaining NaNs/Infs
+    mask = np.isfinite(y) & np.isfinite(pred)
+    if mask.sum() == 0:
+        return float("nan"), float("nan")
+    y2, p2 = y[mask], pred[mask]
+    from sklearn.metrics import mean_absolute_error
+    # version-agnostic RMSE
+    try:
+        from sklearn.metrics import root_mean_squared_error
+        rmse = float(root_mean_squared_error(y2, p2))
+    except Exception:
+        from sklearn.metrics import mean_squared_error
+        rmse = float(np.sqrt(mean_squared_error(y2, p2)))
+    mae  = float(mean_absolute_error(y2, p2))
     return mae, rmse
 
 def main():
@@ -56,6 +68,16 @@ def main():
     Xtr = np.load(win_dir/"X_train.npy"); ytr = np.load(win_dir/"y_train.npy")
     Xva = np.load(win_dir/"X_val.npy");   yva = np.load(win_dir/"y_val.npy")
     Xte = np.load(win_dir/"X_test.npy");  yte = np.load(win_dir/"y_test.npy")
+    
+    def _clean(X, y):
+        X = np.nan_to_num(X, nan=0.0, posinf=0.0, neginf=0.0)
+        m = np.isfinite(y)
+        return X[m], y[m]
+    # Ensure that it cleans.
+    Xtr, ytr = _clean(Xtr, ytr)
+    Xva, yva = _clean(Xva, yva)
+    Xte, yte = _clean(Xte, yte)
+
     in_features = Xtr.shape[-1]
 
     model = LSTMReg(in_features, p["seq"]["hidden_dim"], p["seq"]["num_layers"], p["seq"]["dropout"]).to(DEVICE)
@@ -68,6 +90,7 @@ def main():
     for epoch in range(1, p["seq"]["epochs"]+1):
         model.train()
         for xb, yb in batches(Xtr, ytr, p["seq"]["batch_size"], shuffle=True):
+            xb = torch.nan_to_num(xb, nan=0.0, posinf=0.0, neginf=0.0)
             xb, yb = xb.to(DEVICE), yb.to(DEVICE)
             pred = model(xb)
             loss = loss_fn(pred, yb)
