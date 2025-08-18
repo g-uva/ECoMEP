@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 import paho.mqtt.client as mqtt
 
 ROOT = Path(__file__).resolve().parent
-INFILE = Path(os.getenv("NDJSON", ROOT / "synthetic_metrics.ndjson"))
+INFILE = Path(os.getenv("NDJSON", ROOT / "gen/synthetic_metrics.ndjson"))
 
 BROKER = os.getenv("BROKER", "localhost")
 PORT = int(os.getenv("PORT", "1883"))
