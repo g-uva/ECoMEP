@@ -3,3 +3,6 @@ joblib
 uvicorn[standard]
 fastapi
 pandas
+pydantic
+joblib
+torch
