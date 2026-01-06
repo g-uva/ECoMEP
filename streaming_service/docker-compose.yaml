@@ -47,7 +47,7 @@ services:
       kafka:
         condition: service_healthy
     volumes:
-      - ./kafka_streaming/topics.sh:/app/topics.sh:ro
+      - ./kafka-topics.sh:/app/topics.sh:ro
     environment:
       - BOOTSTRAP=kafka:9092
       - KAFKA_BIN=/opt/bitnami/kafka/bin
@@ -70,7 +70,7 @@ services:
   mqtt_to_kafka:
     build:
       context: ..
-      dockerfile: streaming_service/kafka_streaming/Dockerfile
+      dockerfile: streaming_service/Dockerfile
     container_name: mqtt_to_kafka
     environment:
       MQTT_BROKER: mqtt
@@ -80,88 +80,3 @@ services:
       KAFKA_TOPIC: metrics.raw.stream
     depends_on: [mqtt, kafka]
     restart: unless-stopped
-
-  # # --- MinIO (S3-compatible store for Iceberg) ---
-  # minio:
-  #   image: minio/minio:latest
-  #   command: server /data --console-address ":9001"
-  #   environment:
-  #     MINIO_ROOT_USER: minio
-  #     MINIO_ROOT_PASSWORD: minio123
-  #   ports: ["9000:9000", "9001:9001"]
-  #   volumes:
-  #     - ./minio-data:/data
-  #   healthcheck:
-  #     test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/ready"]
-  #     interval: 10s
-  #     timeout: 5s
-  #     retries: 12
-  #   restart: unless-stopped
-
-  # # Create the 'warehouse' bucket once
-  # mc:
-  #   image: minio/mc:latest
-  #   depends_on:
-  #     minio:
-  #       condition: service_healthy
-  #   entrypoint: ["/bin/sh","-lc","mc alias set local http://minio:9000 minio minio123 && mc mb -p local/warehouse || true && tail -f /dev/null"]
-  #   restart: unless-stopped
-
-
-  # # --- Flink (SQL) ---
-  # flink-jobmanager:
-  #   image: flink:1.18
-  #   command: jobmanager
-  #   environment:
-  #     - |
-  #       FLINK_PROPERTIES=
-  #       jobmanager.rpc.address: flink-jobmanager
-  #       rest.address: 0.0.0.0
-  #       rest.port: 8081
-  #       # S3/MinIO for Iceberg
-  #       s3.endpoint: http://minio:9000
-  #       s3.path.style.access: true
-  #       s3.access-key: minio
-  #       s3.secret-key: minio123
-  #       s3.ssl.enabled: false
-  #   ports: ["8081:8081"]
-  #   volumes:
-  #     - ./flink-lib:/opt/flink/custom-lib
-  #     - ./sql:/sql
-  #   restart: unless-stopped
-
-  # flink-taskmanager:
-  #   image: flink:1.18
-  #   command: taskmanager
-  #   depends_on: [flink-jobmanager]
-  #   environment:
-  #     - |
-  #       FLINK_PROPERTIES=
-  #       classloader.resolve-order: parent-first
-  #       jobmanager.rpc.address: flink-jobmanager
-  #       taskmanager.numberOfTaskSlots: 2
-
-  #       rest.address: 0.0.0.0
-  #       rest.port: 8081
-  #       pipeline.jars: file:///opt/flink/custom-lib/flink-connector-kafka-3.2.0-1.18.jar,file:///opt/flink/custom-lib/iceberg-flink-runtime-1.5.0.jar,file:///opt/flink/custom-lib/iceberg-aws-bundle-1.5.0.jar
-
-  #       s3.endpoint: http://minio:9000
-  #       s3.path.style.access: true
-  #       s3.access-key: minio
-  #       s3.secret-key: minio123
-  #       s3.ssl.enabled: false
-  #   volumes:
-  #     - ./flink-lib:/opt/flink/custom-lib
-  #   restart: unless-stopped
-
-  # # Run the SQL once (detached) after JM is up
-  # flink-sql-init:
-  #   image: flink:1.18
-  #   depends_on:
-  #     flink-jobmanager:
-  #       condition: service_started
-  #   volumes:
-  #     - ./flink-lib:/opt/flink/custom-lib
-  #     - ./sql:/sql
-  #   entrypoint: ["/bin/bash", "-lc", "bin/sql-client.sh -f /sql/flink_to_iceberg.sql"]
-  #   restart: "no"

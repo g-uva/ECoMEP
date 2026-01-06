@@ -11,8 +11,8 @@ RUN apt-get update && \
 COPY requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY streaming_service/kafka_streaming/mqtt_to_kafka.py .
-COPY streaming_service/kafka_streaming/kafka-topics.sh .
+COPY streaming_service/mqtt_to_kafka.py .
+COPY streaming_service/kafka-topics.sh .
 
 # Normalize line endings and ensure executable
 RUN dos2unix ./kafka-topics.sh && chmod +x ./kafka-topics.sh
