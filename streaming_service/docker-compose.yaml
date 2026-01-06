@@ -47,7 +47,7 @@ services:
       kafka:
         condition: service_healthy
     volumes:
-      - ./docker/kafka_streaming/topics.sh:/app/topics.sh:ro
+      - ./kafka_streaming/topics.sh:/app/topics.sh:ro
     environment:
       - BOOTSTRAP=kafka:9092
       - KAFKA_BIN=/opt/bitnami/kafka/bin
@@ -68,7 +68,9 @@ services:
 
   # The bridge containerised
   mqtt_to_kafka:
-    build: ./docker/kafka_streaming
+    build:
+      context: ..
+      dockerfile: streaming_service/kafka_streaming/Dockerfile
     container_name: mqtt_to_kafka
     environment:
       MQTT_BROKER: mqtt

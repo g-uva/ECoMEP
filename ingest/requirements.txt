@@ -1,8 +1,0 @@
-scikit-learn==1.5.1
-joblib
-uvicorn[standard]
-fastapi
-pandas
-pydantic
-joblib
-torch

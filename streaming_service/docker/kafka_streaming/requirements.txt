@@ -1,3 +1,0 @@
-kafka-python
-paho-mqtt
-confluent-kafka>=2.4

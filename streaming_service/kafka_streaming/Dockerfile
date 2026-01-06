@@ -8,11 +8,11 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends bash dos2unix ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 
-COPY ./requirements.txt .
+COPY requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY ./mqtt_to_kafka.py .
-COPY ./kafka-topics.sh .
+COPY streaming_service/kafka_streaming/mqtt_to_kafka.py .
+COPY streaming_service/kafka_streaming/kafka-topics.sh .
 
 # Normalize line endings and ensure executable
 RUN dos2unix ./kafka-topics.sh && chmod +x ./kafka-topics.sh

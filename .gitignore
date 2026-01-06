@@ -10,7 +10,7 @@ flink-lib
 minio-data/
 
 gen/
-__pycache__
+__pycache__/
 
 
 data/
