@@ -9,11 +9,11 @@ services:
     volumes:
       # make sure this file exists at repo root; see snippet below
       - ./mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
-    healthcheck:
-      test: ["CMD-SHELL", "mosquitto_sub -h 127.0.0.1 -t test -C 1 -W 2 || exit 1"]
-      interval: 10s
-      timeout: 3s
-      retries: 5
+    # healthcheck: 
+    #   test: ["CMD-SHELL", "mosquitto_sub -h 127.0.0.1 -t test -C 1 -W 2 || exit 1"]
+    #   interval: 10s
+    #   timeout: 3s
+    #   retries: 5
     restart: unless-stopped
 
   zookeeper:

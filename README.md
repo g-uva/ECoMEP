@@ -19,18 +19,97 @@ Deployed as part of the **GreenDIGIT WP6.2** research activities, this module in
 - IFCA and DIRAC records infrastructure
 
 ### To-dos (create tickets)
-- [ ] Testbed implementation IoT with UTH
-- [ ] DVC assets imported from remote storage (GDrive or AWS)
+- [ ] DVC assets imported from remote storage (GDrive, AWS or server)
 - ML model is quite simple. Things to improve.
-  - [ ] XGBoost, CatBoost (or other SoTA gradient boost tool-algo)
-  - [ ] Deep Learning: Convolutional Neural Network (LSTM, Temporal Convolution, Transformer) with PyTorch or TensorFlow
+  - [x] XGBoost, CatBoost (or other SoTA gradient boost tool-algo)
+  - [x] Deep Learning: Convolutional Neural Network (LSTM, Temporal Convolution, Transformer) with PyTorch or TensorFlow
   - [ ] Use `scikit-learn-onnx` for more adaptability to edge-devices
-  - [ ] Integrate MQTT and/or Prometheus for edge-optimised messaging telemetry between devices (for the Edge)
-- [ ] Metrics' ingestion: batch + real-time streaming (Kafka)
+  - [x] Integrate MQTT and/or Prometheus for edge-optimised messaging telemetry between devices (for the Edge)
+- [ ] Metrics' ingestion: batch API from CNR
+- [x] Metrics' ingestion: Kafka + MQTT + Flink/Spark + PostgreSQL/InfluxDB
+- [ ] (Optional) Testbed implementation IoT with UTH
+
+## Models used
+
+### Baseline: HistGradientBoostingRegressor (HGBR)
+A tree-boosting model from `scikit-learn` used as the initial baseline. It operates on tabular, engineered features (lags, rolling statistics), is fast to train, handles missing values with an imputer, and gives a strong reference MAE/RMSE to beat.
+
+### XGBoost (Gradient Boosted Trees)
+High-performance gradient boosting on decision trees (histogram algorithm). Strong on heterogeneous tabular data, captures non-linear interactions well, robust to missing values, and typically competitive as a production baseline. In our pipeline it reads the same engineered features as the baseline and logs train/validation/test metrics plus validation curves to DVC.
+
+
+### LSTM (sequence model)
+A recurrent neural network that ingests sliding **time windows** shaped as `[samples, timesteps, features]`, therefore modelling temporal dependencies explicitly. Useful when recent history strongly determines near-future power. Requires normalised inputs and careful tuning; CPU training is slower than tree models.
+
+### ARIMA/SARIMA
+(Seasonal/) Autoregression Integrated Moving Average.
+- [ ] TODO: write description.
+
+> The pipeline includes a **champion selector** which chooses the best model by test error and writes `models/champion.json` for the inference service to load.
+
+## Running the service and getting predictions
+
+### 1) Train models and pick a winner
+Ensure the DVC pipeline has produced models and metrics:
+```bash
+# From repo root
+dvc repro          # runs ingest → featurise → train → validate_features → train_xgb → reshape_windows → train_lstm → select_champion
+dvc metrics show   # compare baseline / xgb / lstm / (s)arima
+```
+
+### 2) Start the FastAPI service
+```bash
+uvicorn service.main:app --host 0.0.0.0 --port 8000
+```
+
+Health and model info:
+```bash
+curl http://localhost:8000/health
+curl http://localhost:8000/model
+```
+
+### 3) Request a prediction
+If the champion is **XGBoost/HGBR (tabular)**, send a flat feature dict.
+```bash
+curl -X POST http://localhost:8000/predict \
+  -H 'Content-Type: application/json' \
+  -d '{
+        "features": {
+          "cpu_usage_percent": 12.3,
+          "memory_used_bytes": 8200000000,
+          "network_bw_rx_b/s": 155000,
+          "lag_1h": 320.5,
+          "lag_2h": 315.1,
+          "lag_3h": 318.9,
+          "lag_6h": 310.2
+        }
+      }'
+# → {"power_forecast": <number>}
+```
+If the "champion" is **LSTM (sequence)**, send the most recent window `[timesteps]` `[features]`.
+```bash
+curl -X POST http://localhost:8000/predict \
+  -H 'Content-Type: application/json' \
+  -d '{
+        "window": [
+          [12.3, 8200000000, 155000, ...],
+          [13.1, 8300000000, 160000, ...],
+          [11.9, 8100000000, 150000, ...]
+          // ... up to the configured window length (e.g., 60 steps)
+        ]
+      }'
+# → {"power_forecast": <number>}
+```
+
+#### Notes
+- The service loads `models/champion.json`, so deployment remains model-agnostic.
+- If your features use CIM paths or aliases, map them to the canonical na
+mes server-side before padding missing inputs.
+- For production, persist any scalers with the model and apply them inside the service, validate inputs, and secure the endpoint.
 
 ---
 
-## Current Features
+## Metrics Ingestion Services (Features)
 - Ingest, Featurise and Train stages in-built as a pipeline (with DVC tracking).
 - FastAPI server `/predict` endpoint with a `{"power_forecast":<number>}` result.
 - MQTT + Kafka + Flink streaming pipeline
@@ -41,6 +120,7 @@ Deployed as part of the **GreenDIGIT WP6.2** research activities, this module in
 cd streaming_service # you should see a docker-compose.yaml if you run ls -la
 docker compose up -d --build
 ```
+
 This will spin-up several services included in the compose file, including Kafka-UI, MQTT broker/subscriber and a Kafka bridge that ingests that service.
 To see the logs from MQTT and Kafka respectively:
 - `docker logs -f mqtt`
@@ -126,7 +206,14 @@ python metrics_publisher.py
 ---
 
 ## Folder Structure
-- [ ] Refactor and write the folder structure in MD here.
+- `.dvc/`, `dvc.yaml`, `dvc.lock` — DVC pipeline and metadata.
+- `data/` — raw/clean/features/windows datasets managed by DVC.
+- `metrics/` — JSON metrics tracked by DVC (baseline, XGBoost, LSTM).
+- `models/` — trained artefacts (`baseline.joblib`, `xgb.joblib`, `lstm.pt`, `champion.json`).
+- `scripts/` — pipeline scripts (`ingest.py`, `featurise.py`, `train.py`, `train_xgb.py`, `make_windows.py`, `train_lstm.py`, etc.).
+- `service/` — FastAPI inference service (model-agnostic champion loader).
+- `synthetic_metrics_service/`, `streaming_service/`, `ingest_service/` — data generation and streaming/ELT components.
+- `openfaas/`, `assets/` — deployment/testbed and documentation assets.
 
 <!-- ```bash
 .
@@ -197,7 +284,7 @@ GreenDIGIT WP6.2 Team
 📧 contact@greendigit.eu
 🌐 greendigit.eu
 
----
+<!-- ---
 
 ### Notes Serverless (temporary)
 Followed the [Official Golang-Http OpenFaaS](https://docs.openfaas.com/languages/go/#add-your-own-sub-modules) documentation to set the first experiment.
@@ -250,4 +337,4 @@ kubectl port-forward -n openfaas svc/gateway 8080:8080
 ```sh
 curl -X POST http://localhost:8080/function/echo
 > Hello World!%
-```
+``` -->
