@@ -16,4 +16,7 @@ __pycache__/
 data/
 xgb.json
 isympy.**
-metrics/**
+metrics/
+**workloads/**/*.jsonl
+
+

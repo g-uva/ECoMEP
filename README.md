@@ -1,4 +1,4 @@
-# 🌱🌍♻️ ECoMEP - Edge-Cloud Continuum Multi-Level ML Energy Prediction Framework (GreenDIGIT project)
+# 🌱🌍♻️ WP6.2 Multi-Level Heterogeneous ML Pipeline (GreenDIGIT Project)
 
 >**Disclaimer**: the information on this README is still temporary. The tools, architecture and other specifications are subject to change.
 
@@ -8,7 +8,7 @@
 
 ## Overview
 
-This framework enables **real-time predictive modelling** across **Edge–Fog–Cloud infrastructures** using **multi-level machine learning pipelines**. It ingests environmental and performance metrics (e.g. energy, CPU usage, workload profiles) from **distributed clusters and IoT devices**, processes them, and trains models to **forecast resource usage, network load, and system performance**.
+This framework enables **real-time predictive modelling** across **Cloud, Grid and Network infrastructures** using **multi-level machine learning pipelines**. It ingests environmental and performance metrics (e.g. energy, CPU usage, workload profiles) from **distributed clusters and IoT devices**, processes them, and trains models to **forecast resource usage/availability and energy performance (CFP)**.
 
 Deployed as part of the **GreenDIGIT WP6.2** research activities, this module integrates with:
 
