@@ -212,7 +212,7 @@ python metrics_publisher.py
 - `models/` — trained artefacts (`baseline.joblib`, `xgb.joblib`, `lstm.pt`, `champion.json`).
 - `scripts/` — pipeline scripts (`ingest.py`, `featurise.py`, `train.py`, `train_xgb.py`, `make_windows.py`, `train_lstm.py`, etc.).
 - `service/` — FastAPI inference service (model-agnostic champion loader).
-- `synthetic_metrics_service/`, `streaming_service/`, `ingest_service/` — data generation and streaming/ELT components.
+- `synthetic_metrics_service/`, `streaming_service/`, `ingest/` — data generation and streaming/ELT components.
 - `assets/` — documentation assets.
 
 <!-- ```bash
@@ -266,4 +266,3 @@ For questions, integration requests or metric schema definitions, contact:
 GreenDIGIT WP6.2 Team
 📧 contact@greendigit.eu
 🌐 greendigit.eu
-
