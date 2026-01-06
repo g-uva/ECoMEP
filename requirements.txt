@@ -1,0 +1,14 @@
+confluent-kafka>=2.4
+fastapi
+joblib
+kafka-python
+numpy
+paho-mqtt
+pandas
+pydantic
+pyarrow
+pyyaml
+scikit-learn==1.5.1
+torch
+uvicorn[standard]
+xgboost
