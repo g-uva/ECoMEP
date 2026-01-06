@@ -213,7 +213,7 @@ python metrics_publisher.py
 - `scripts/` — pipeline scripts (`ingest.py`, `featurise.py`, `train.py`, `train_xgb.py`, `make_windows.py`, `train_lstm.py`, etc.).
 - `service/` — FastAPI inference service (model-agnostic champion loader).
 - `synthetic_metrics_service/`, `streaming_service/`, `ingest_service/` — data generation and streaming/ELT components.
-- `openfaas/`, `assets/` — deployment/testbed and documentation assets.
+- `assets/` — documentation assets.
 
 <!-- ```bash
 .
@@ -227,23 +227,6 @@ python metrics_publisher.py
 ├── Dockerfile
 ├── requirements.txt
 └── README.md
-``` -->
-
-<!-- ### New version
-```bash
-EdgeCloudPredictive/
-├── ingestion/                # Kafka consumers, schema
-├── preprocessing/            # Feature builders, GreatExp suites
-├── training/                 # PyTorch/Sklearn code, MLflow configs
-├── inference/                # FastAPI server, ONNX / TFLite loaders
-├── scripts/                  # ML ingestion, featurise + training steps
-├── server/                   # Containerised FastAPI server for HTTP prediction request
-├── deployment/               # Helm charts, Dockerfiles
-│   ├── helm/                 # Chart for Training & Inference services
-│   └── gha-workflows/        # CI/CD YAML
-├── crate/                    # RO-Crate metadata, licences, schema
-├── ro-crate-metadata.json
-└── notebooks/                # EDA & experiment design
 ``` -->
 
 ## Outputs and Publications
@@ -284,57 +267,3 @@ GreenDIGIT WP6.2 Team
 📧 contact@greendigit.eu
 🌐 greendigit.eu
 
-<!-- ---
-
-### Notes Serverless (temporary)
-Followed the [Official Golang-Http OpenFaaS](https://docs.openfaas.com/languages/go/#add-your-own-sub-modules) documentation to set the first experiment.
-
-1. First we must set the Kubernetes environment. OpenFaaS works with automatic deployment to a Kubernetes cluster with pre-defined namespaces `openfaas` and `openfaas-fn`.
-
-```sh
-# Helm, Kubernetes (kubectl), arkade and faas-cli must be installed.
-kubectl create ns openfaas
-kubectl create ns openfaas-fn
-
-helm repo add openfaas https://openfaas.github.io/faas-netes
-helm repo update
-
-helm upgrade openfaas --install openfaas/openfaas \
-  --namespace openfaas \
-  --set gateway.directFunctions=true \
-  --set generateBasicAuth=true
-
-# port-forward (dev only)
-kubectl -n openfaas port-forward svc/gateway 8080:8080 &
-
-```
-
-2. Now create the template, alter the `stack.yaml` with the image from my `goncaloferreirauva` DockerHub repository. There are some workarounds needed for the "default" commands from `faas-cli`.
-```sh
-# Install templates and handler function.
-faas-cli template store pull golang-middleware
-faas-cli new --lang golang-middleware echo
-
-# This will build the Docker image, but not push it.
-faas-cli build  -f stack.yaml
-
-# We must add a tag to the echo Docker image and push
-# to your own DockerHub repo. Substitute $YOUR_USERNAME
-# with your own.
-docker tag echo:latest $YOUR_USERNAME/echo:latest
-docker push $YOUR_USERNAME/echo:latest
-
-# Just to test if the cluster is correctly set:
-kubectl get pods -n openfaas
-kubectl get svc -n openfaas
-
-# Just for dev, port-forward
-kubectl port-forward -n openfaas svc/gateway 8080:8080
-# This will lock your terminal. To test this, you must do so from other terminal.
-```
-
-3. Finally, the first curl:
-```sh
-curl -X POST http://localhost:8080/function/echo
-> Hello World!%
-``` -->
