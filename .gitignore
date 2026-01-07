@@ -18,3 +18,5 @@ xgb.json
 isympy.**
 metrics/**
 workloads/**/*.jsonl
+reports/
+models/

@@ -89,33 +89,30 @@ stages:
       md5: 46694e7d8609013b4cbc7d4d6b05f8a7
       size: 175
   train_xgb:
-    cmd: python scripts/train_xgb.py
+    cmd: python scripts/train_xgb.py --params params.yaml
     deps:
-    - path: data/features/test.parquet
+    - path: data/features/features.parquet
       hash: md5
-      md5: f2ed3045cd2a291f1c3844932bb54ea2
-      size: 1031555
-    - path: data/features/train.parquet
-      hash: md5
-      md5: 4680008a28b964c7d5a94c39923e0221
-      size: 4680027
+      md5: fd92c6ec4b4d14d4d12da39151db52c7
+      size: 41423869
     - path: params.yaml
       hash: md5
-      md5: e3a7b1b480b85b1b3e4b58b111a3b22f
-      size: 160
+      md5: 463ec220a801a88aa08efe4aa7a26a1d
+      size: 485
     - path: scripts/train_xgb.py
       hash: md5
-      md5: f8ce66093a4685de314b146bf3d6534b
-      size: 6568
+      md5: c1aa10ea783e7d46c4a92021b846fd39
+      size: 3135
     outs:
-    - path: metrics/xgb.json
+    - path: models/xgb
       hash: md5
-      md5: a1e252da2d2f210bad18f875fa9b0c72
-      size: 23746
-    - path: models/xgb.joblib
+      md5: 733bca09e4984374efcc823e5e54b156.dir
+      size: 5126144
+      nfiles: 2
+    - path: reports/metrics/xgb.json
       hash: md5
-      md5: fd810c10b6e404005309d389d97eab97
-      size: 3631629
+      md5: 0d4f5f760967e6a32ab1eec785da1d1d
+      size: 3095
   reshape_windows:
     cmd: python scripts/make_windows.py
     deps:
@@ -165,49 +162,30 @@ stages:
       md5: 1aa34f46085f8b806fe1f6d28178f550
       size: 27764
   train_lstm:
-    cmd: python scripts/train_lstm.py
+    cmd: python scripts/train_lstm.py --params params.yaml
     deps:
-    - path: data/windows/X_test.npy
+    - path: data/features/features.parquet
       hash: md5
-      md5: a4fd97005de26f67aa44786c365c187c
-      size: 183047168
-    - path: data/windows/X_train.npy
-      hash: md5
-      md5: 60d99a6c414ef8a3ad6550c0dad9c202
-      size: 624650528
-    - path: data/windows/X_val.npy
-      hash: md5
-      md5: 8427ece5da0e63ef945eebc19889b4a7
-      size: 109438688
-    - path: data/windows/y_test.npy
-      hash: md5
-      md5: a06e3f27c6f409662208f0ba7d805ace
-      size: 46352
-    - path: data/windows/y_train.npy
-      hash: md5
-      md5: a3f2a47df24c1bf2beb5f872806a6218
-      size: 157868
-    - path: data/windows/y_val.npy
-      hash: md5
-      md5: 1aa34f46085f8b806fe1f6d28178f550
-      size: 27764
+      md5: fd92c6ec4b4d14d4d12da39151db52c7
+      size: 41423869
     - path: params.yaml
       hash: md5
-      md5: e3a7b1b480b85b1b3e4b58b111a3b22f
-      size: 160
+      md5: 463ec220a801a88aa08efe4aa7a26a1d
+      size: 485
     - path: scripts/train_lstm.py
       hash: md5
-      md5: 327f57dd3da7c8a32a9ff67ca19bcfe9
-      size: 5504
+      md5: e4098fe5a13234b3ee30302cc922e5bc
+      size: 5503
     outs:
-    - path: metrics/lstm.json
+    - path: models/lstm
       hash: md5
-      md5: 29b36af191b10694ef7c9e0b8d20f140
-      size: 2444
-    - path: models/lstm.pt
+      md5: f321bdcaa0463e865da262b98087875a.dir
+      size: 412362
+      nfiles: 2
+    - path: reports/metrics/lstm.json
       hash: md5
-      md5: 1aeec0a0cd9bce32f9e211405dc9e015
-      size: 967049
+      md5: 2e1412b88659c21bdf17617feab7b515
+      size: 316
   select_champion:
     cmd: python scripts/select_champion.py
     deps:
@@ -232,3 +210,77 @@ stages:
       hash: md5
       md5: e20311b51c1e6530ad2d9ba334692a7f
       size: 105
+  make_features:
+    cmd: python scripts/make_features.py --params params.yaml
+    deps:
+    - path: data/gold_link_window_features_delta
+      hash: md5
+      md5: 7c610f1c573b00dddc1bd27b6da59274.dir
+      size: 15424639
+      nfiles: 736
+    - path: params.yaml
+      hash: md5
+      md5: 463ec220a801a88aa08efe4aa7a26a1d
+      size: 485
+    - path: scripts/make_features.py
+      hash: md5
+      md5: ff41cda44876a2441f52e4c279c02c44
+      size: 4577
+    outs:
+    - path: data/features/features.parquet
+      hash: md5
+      md5: fd92c6ec4b4d14d4d12da39151db52c7
+      size: 41423869
+  train_arima:
+    cmd: python scripts/train_arima.py --params params.yaml
+    deps:
+    - path: data/features/features.parquet
+      hash: md5
+      md5: fd92c6ec4b4d14d4d12da39151db52c7
+      size: 41423869
+    - path: params.yaml
+      hash: md5
+      md5: 463ec220a801a88aa08efe4aa7a26a1d
+      size: 485
+    - path: scripts/train_arima.py
+      hash: md5
+      md5: 9790ea07d164d3ed3c2c17e9dd203ef4
+      size: 2711
+    outs:
+    - path: models/arima
+      hash: md5
+      md5: 9fcb618f5926d7a30c12b3a21532d7d2.dir
+      size: 245622091
+      nfiles: 2
+    - path: reports/metrics/arima.json
+      hash: md5
+      md5: 57d12aa1d2eff99d7c5fb8e741f95eb2
+      size: 316
+  evaluate:
+    cmd: python scripts/evaluate.py --params params.yaml
+    deps:
+    - path: params.yaml
+      hash: md5
+      md5: 463ec220a801a88aa08efe4aa7a26a1d
+      size: 485
+    - path: reports/metrics/arima.json
+      hash: md5
+      md5: 57d12aa1d2eff99d7c5fb8e741f95eb2
+      size: 316
+    - path: reports/metrics/lstm.json
+      hash: md5
+      md5: 2e1412b88659c21bdf17617feab7b515
+      size: 316
+    - path: reports/metrics/xgb.json
+      hash: md5
+      md5: 0d4f5f760967e6a32ab1eec785da1d1d
+      size: 3095
+    - path: scripts/evaluate.py
+      hash: md5
+      md5: 9ed20c820f5c62ab204f3b4d349ad6a5
+      size: 884
+    outs:
+    - path: reports/metrics/summary.json
+      hash: md5
+      md5: dce52971d546ca1249b10a5f8b20cc6d
+      size: 4055

@@ -24,8 +24,14 @@ def smape(y_true: np.ndarray, y_pred: np.ndarray) -> float:
 
 
 def build_features(df: pd.DataFrame, target: str) -> (pd.DataFrame, np.ndarray):
-    drop_cols = {target, "split", "window_start_ts", "window_end_ts"}
+    drop_cols = {target, "split", "window_start_ts", "window_end_ts", "ingested_at_ts", "date"}
     X = df.drop(columns=[c for c in drop_cols if c in df.columns])
+
+    # Remove any remaining datetime/timedelta columns to keep XGBoost happy.
+    datetime_cols = list(X.select_dtypes(include=["datetime64[ns]", "datetime64[ns, UTC]", "timedelta64[ns]"]).columns)
+    if datetime_cols:
+        X = X.drop(columns=datetime_cols)
+
     X = pd.get_dummies(X, columns=["src_node", "dst_node"], drop_first=False)
     X = X.fillna(0)
     y = df[target].to_numpy()
