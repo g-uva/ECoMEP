@@ -1,13 +1,32 @@
-model:
-  n_estimators: 300
-  max_depth: 6
-  learning_rate: 0.05
 data:
-  test_size: 0.2
+  gold_path: data/gold_link_window_features_delta
+  features_path: data/features/features.parquet
+  window_minutes: 5
+
 features:
-  lags:
-  - 1
-  - 2
-  - 3
-  - 6
-target: rapl_power_total_watts
+  max_lag: 12
+  rolling: 12
+  kpi_path: data/site_kpis.parquet
+
+split:
+  train_frac: 0.7
+  val_frac: 0.1
+  test_frac: 0.2
+
+xgb:
+  max_depth: 6
+  n_estimators: 400
+  learning_rate: 0.05
+  subsample: 0.9
+  colsample_bytree: 0.9
+
+lstm:
+  seq_len: 24
+  hidden_size: 64
+  num_layers: 2
+  epochs: 20
+  batch_size: 64
+  lr: 0.001
+
+arima:
+  order: [1, 0, 1]

@@ -1,149 +1,165 @@
 #!/usr/bin/env python3
-import json, pathlib, time, yaml
-from datetime import datetime
+from __future__ import annotations
+
+import argparse
+import json
+from pathlib import Path
+from typing import Dict, List, Tuple
+
 import numpy as np
+import pandas as pd
 import torch
 import torch.nn as nn
-from sklearn.metrics import mean_absolute_error, mean_squared_error
+from torch.utils.data import DataLoader, Dataset
+import yaml
 
-ROOT = pathlib.Path(__file__).resolve().parents[1]
-DEVICE = "cpu"
+
+def read_params(path: Path) -> dict:
+    with open(path, "r") as f:
+        return yaml.safe_load(f)
+
+
+def smape(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    denom = (np.abs(y_true) + np.abs(y_pred)) / 2.0
+    denom = np.where(denom == 0, 1.0, denom)
+    return float(np.mean(np.abs(y_true - y_pred) / denom))
+
+
+class SeqDataset(Dataset):
+    def __init__(self, series: np.ndarray, seq_len: int):
+        self.seq_len = seq_len
+        self.series = series
+        self.samples = self._build_samples()
+
+    def _build_samples(self) -> List[Tuple[np.ndarray, float]]:
+        samples = []
+        for i in range(len(self.series) - self.seq_len):
+            x = self.series[i : i + self.seq_len]
+            y = self.series[i + self.seq_len]
+            samples.append((x.astype(np.float32), float(y)))
+        return samples
+
+    def __len__(self):
+        return len(self.samples)
+
+    def __getitem__(self, idx):
+        x, y = self.samples[idx]
+        return torch.tensor(x).unsqueeze(-1), torch.tensor(y)
+
 
 class LSTMReg(nn.Module):
-    def __init__(self, in_features, hidden, layers, dropout):
+    def __init__(self, input_size: int, hidden_size: int, num_layers: int):
         super().__init__()
-        self.lstm = nn.LSTM(input_size=in_features, hidden_size=hidden, num_layers=layers, batch_first=True, dropout=dropout if layers>1 else 0.0)
-        self.head = nn.Sequential(nn.Flatten(), nn.Linear(hidden, hidden//2), nn.ReLU(), nn.Linear(hidden//2, 1))
+        self.lstm = nn.LSTM(input_size, hidden_size, num_layers=num_layers, batch_first=True)
+        self.head = nn.Linear(hidden_size, 1)
+
     def forward(self, x):
         out, _ = self.lstm(x)
-        last = out[:, -1, :]         # [B, hidden]
-        return self.head(last).squeeze(-1)
+        out = out[:, -1, :]
+        return self.head(out).squeeze(-1)
 
-def load_params():
-    with open(ROOT/"params.yaml") as f:
-        p = yaml.safe_load(f)
-    p.setdefault("seq", {})
-    s = p["seq"]
-    s.setdefault("epochs", 3)
-    s.setdefault("batch_size", 128)
-    s.setdefault("hidden_dim", 128)
-    s.setdefault("num_layers", 2)
-    s.setdefault("dropout", 0.1)
-    s.setdefault("lr", 1e-3)
-    s.setdefault("patience", 5)
-    return p
 
-def batches(X, y, bs, shuffle=True):
-    idx = np.arange(len(X))
-    if shuffle: np.random.shuffle(idx)
-    for i in range(0, len(idx), bs):
-        j = idx[i:i+bs]
-        yield torch.tensor(X[j], dtype=torch.float32), torch.tensor(y[j], dtype=torch.float32)
-
-def eval_metrics(model, X, y):
-    with torch.no_grad():
-        preds = []
-        for xb, yb in batches(X, y, 4096, shuffle=False):
-            preds.append(model(xb.to(DEVICE)).cpu().numpy())
-        pred = np.concatenate(preds) if preds else np.array([])
-    # Guard against any remaining NaNs/Infs
-    mask = np.isfinite(y) & np.isfinite(pred)
-    if mask.sum() == 0:
-        return float("nan"), float("nan")
-    y2, p2 = y[mask], pred[mask]
-    from sklearn.metrics import mean_absolute_error
-    # version-agnostic RMSE
-    try:
-        from sklearn.metrics import root_mean_squared_error
-        rmse = float(root_mean_squared_error(y2, p2))
-    except Exception:
-        from sklearn.metrics import mean_squared_error
-        rmse = float(np.sqrt(mean_squared_error(y2, p2)))
-    mae  = float(mean_absolute_error(y2, p2))
-    return mae, rmse
-
-def main():
-    p = load_params()
-    win_dir = ROOT / "data" / "windows"
-    Xtr = np.load(win_dir/"X_train.npy"); ytr = np.load(win_dir/"y_train.npy")
-    Xva = np.load(win_dir/"X_val.npy");   yva = np.load(win_dir/"y_val.npy")
-    Xte = np.load(win_dir/"X_test.npy");  yte = np.load(win_dir/"y_test.npy")
-    
-    def _clean(X, y):
-        X = np.nan_to_num(X, nan=0.0, posinf=0.0, neginf=0.0)
-        m = np.isfinite(y)
-        return X[m], y[m]
-    # Ensure that it cleans.
-    Xtr, ytr = _clean(Xtr, ytr)
-    Xva, yva = _clean(Xva, yva)
-    Xte, yte = _clean(Xte, yte)
-
-    in_features = Xtr.shape[-1]
-
-    model = LSTMReg(in_features, p["seq"]["hidden_dim"], p["seq"]["num_layers"], p["seq"]["dropout"]).to(DEVICE)
-    opt = torch.optim.Adam(model.parameters(), lr=p["seq"]["lr"])
+def train_model(model, loader, val_loader, epochs, lr, device):
+    model.to(device)
+    optim = torch.optim.Adam(model.parameters(), lr=lr)
     loss_fn = nn.MSELoss()
-
-    best_va = float("inf"); best_state = None; history = {"epoch": [], "train_rmse": [], "val_rmse": []}
-    patience = p["seq"]["patience"]; cooldown = 0
-
-    for epoch in range(1, p["seq"]["epochs"]+1):
+    for _ in range(epochs):
         model.train()
-        for xb, yb in batches(Xtr, ytr, p["seq"]["batch_size"], shuffle=True):
-            xb = torch.nan_to_num(xb, nan=0.0, posinf=0.0, neginf=0.0)
-            xb, yb = xb.to(DEVICE), yb.to(DEVICE)
+        for xb, yb in loader:
+            xb, yb = xb.to(device), yb.to(device)
+            optim.zero_grad()
             pred = model(xb)
             loss = loss_fn(pred, yb)
-            opt.zero_grad(); loss.backward(); opt.step()
+            loss.backward()
+            optim.step()
+        if val_loader:
+            model.eval()
+            with torch.no_grad():
+                for xb, yb in val_loader:
+                    xb, yb = xb.to(device), yb.to(device)
+                    loss_fn(model(xb), yb)
+    return model
 
-        tr_mae, tr_rmse = eval_metrics(model, Xtr, ytr)
-        va_mae, va_rmse = eval_metrics(model, Xva, yva)
 
-        history["epoch"].append(epoch)
-        history["train_rmse"].append(tr_rmse)
-        history["val_rmse"].append(va_rmse)
+def to_sequences(series: pd.Series, seq_len: int):
+    ds = SeqDataset(series.to_numpy(), seq_len=seq_len)
+    return ds
 
-        if va_rmse < best_va - 1e-6:
-            best_va = va_rmse
-            best_state = {k: v.cpu().clone() for k, v in model.state_dict().items()}
-            cooldown = 0
-        else:
-            cooldown += 1
-            if cooldown >= patience:
-                break
 
-    if best_state is not None:
-        model.load_state_dict(best_state)
+def main() -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--params", default="params.yaml")
+    args = ap.parse_args()
 
-    te_mae, te_rmse = eval_metrics(model, Xte, yte)
+    params = read_params(Path(args.params))
+    df = pd.read_parquet(Path(params["data"]["features_path"]))
+    df.sort_values(["src_node", "dst_node", "window_start_ts"], inplace=True)
 
-    (ROOT/"models").mkdir(exist_ok=True, parents=True)
-    (ROOT/"metrics").mkdir(exist_ok=True, parents=True)
+    out_dir = Path("models/lstm")
+    out_dir.mkdir(parents=True, exist_ok=True)
+    metrics_dir = Path("reports/metrics")
+    metrics_dir.mkdir(parents=True, exist_ok=True)
 
-    model_path = ROOT / "models" / "lstm.pt"
-    torch.save({"state_dict": model.state_dict(),
-                "in_features": in_features}, model_path)
+    cfg = params["lstm"]
+    seq_len = int(cfg["seq_len"])
+    device = "cuda" if torch.cuda.is_available() else "cpu"
 
-    with open(win_dir/"manifest.json") as f:
-        win_manifest = json.load(f)
+    metrics: Dict[str, Dict] = {}
+    targets = ["sum_energy_Wh", "sum_duration_s"]
 
-    metrics = {
-        "model_type": "lstm",
-        "model_path": str(model_path.relative_to(ROOT)),
-        "feature_names": win_manifest["feature_order"],
-        "window": win_manifest["window"],
-        "horizon": win_manifest["horizon"],
-        "schema_version": p.get("schema", {}).get("version", "unknown"),
-        "trained_at": datetime.utcnow().isoformat() + "Z",
-        "metrics": {
-            "train": {"mae": history["train_rmse"][-1]/1.253 if history["train_rmse"] else None, "rmse": history["train_rmse"][-1] if history["train_rmse"] else None},
-            "val":   {"mae": None, "rmse": best_va},
-            "test":  {"mae": te_mae, "rmse": te_rmse}
-        },
-        "curves": history
-    }
-    with open(ROOT/"metrics"/"lstm.json","w") as f:
+    for target in targets:
+        target_dir = out_dir / target
+        target_dir.mkdir(parents=True, exist_ok=True)
+        metrics[target] = {}
+
+        for (src, dst), grp in df.groupby(["src_node", "dst_node"]):
+            train_vals = grp[grp["split"] == "train"][target]
+            val_vals = grp[grp["split"] == "val"][target]
+            test_vals = grp[grp["split"] == "test"][target]
+
+            if len(train_vals) <= seq_len or len(test_vals) == 0:
+                continue
+
+            train_ds = to_sequences(train_vals, seq_len)
+            val_ds = to_sequences(val_vals, seq_len) if len(val_vals) > seq_len else None
+            test_ds = to_sequences(test_vals, seq_len)
+
+            train_loader = DataLoader(train_ds, batch_size=int(cfg["batch_size"]), shuffle=True)
+            val_loader = DataLoader(val_ds, batch_size=int(cfg["batch_size"]), shuffle=False) if val_ds else None
+            test_loader = DataLoader(test_ds, batch_size=int(cfg["batch_size"]), shuffle=False)
+
+            model = LSTMReg(input_size=1, hidden_size=int(cfg["hidden_size"]), num_layers=int(cfg["num_layers"]))
+            model = train_model(model, train_loader, val_loader, epochs=int(cfg["epochs"]), lr=float(cfg["lr"]), device=device)
+
+            preds, truth = [], []
+            model.eval()
+            with torch.no_grad():
+                for xb, yb in test_loader:
+                    xb = xb.to(device)
+                    out = model(xb).cpu().numpy()
+                    preds.extend(out.tolist())
+                    truth.extend(yb.numpy().tolist())
+
+            y_true = np.array(truth)
+            y_pred = np.array(preds)[: len(y_true)]
+            mae = float(np.mean(np.abs(y_true - y_pred)))
+            rmse = float(np.sqrt(np.mean((y_true - y_pred) ** 2)))
+            metrics[target][f"{src}_{dst}"] = {
+                "mae": mae,
+                "rmse": rmse,
+                "smape": smape(y_true, y_pred),
+            }
+
+            torch.save(
+                {"model_state": model.state_dict(), "seq_len": seq_len},
+                target_dir / f"{src}_{dst}.pt",
+            )
+
+    with open(metrics_dir / "lstm.json", "w") as f:
         json.dump(metrics, f, indent=2)
 
+    return 0
+
+
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

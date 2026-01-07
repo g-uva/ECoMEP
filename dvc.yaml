@@ -1,119 +1,57 @@
 stages:
-  ingest:
-    cmd: python scripts/ingest.py data/raw data/clean
+  make_features:
+    cmd: python scripts/make_features.py --params params.yaml
     deps:
-    - data/raw
-    - scripts/ingest.py
+      - scripts/make_features.py
+      - data/gold_link_window_features_delta
+      - params.yaml
     outs:
-    - data/clean
-  featurise:
-    cmd: python scripts/featurise.py data/clean data/features
+      - data/features/features.parquet
+
+  train_arima:
+    cmd: python scripts/train_arima.py --params params.yaml
     deps:
-    - data/clean
-    - scripts/featurise.py
+      - scripts/train_arima.py
+      - data/features/features.parquet
+      - params.yaml
     outs:
-    - data/features
-  train:
-    cmd: python scripts/train.py data/features models/baseline.joblib
-    deps:
-    - data/features
-    - scripts/train.py
-    params:
-    - model.n_estimators
-    - model.max_depth
-    - model.learning_rate
-    outs:
-    - models/baseline.joblib
+      - models/arima
     metrics:
-    - metrics/metrics.json:
-        cache: false
-  validate_features:
-    cmd: python scripts/validate_features.py
-    deps:
-    - data/features/train.parquet
-    - schema/aliases.yaml
-    - params.yaml
-    - scripts/validate_features.py
-    outs:
-    - reports/schema_report.json
+      - reports/metrics/arima.json:
+          cache: false
+
   train_xgb:
-    cmd: python scripts/train_xgb.py
+    cmd: python scripts/train_xgb.py --params params.yaml
     deps:
-    - data/features/train.parquet
-    - data/features/test.parquet
-    - params.yaml
-    - scripts/train_xgb.py
+      - scripts/train_xgb.py
+      - data/features/features.parquet
+      - params.yaml
     outs:
-    - models/xgb.joblib
+      - models/xgb
     metrics:
-    - metrics/xgb.json:
-        cache: false
-  reshape_windows:
-    cmd: python scripts/make_windows.py
-    deps:
-    - data/features/train.parquet
-    - data/features/test.parquet
-    - params.yaml
-    - scripts/make_windows.py
-    outs:
-    - data/windows/X_train.npy
-    - data/windows/y_train.npy
-    - data/windows/X_val.npy
-    - data/windows/y_val.npy
-    - data/windows/X_test.npy
-    - data/windows/y_test.npy
-    - data/windows/manifest.json
+      - reports/metrics/xgb.json:
+          cache: false
+
   train_lstm:
-    cmd: python scripts/train_lstm.py
+    cmd: python scripts/train_lstm.py --params params.yaml
     deps:
-    - data/windows/X_train.npy
-    - data/windows/y_train.npy
-    - data/windows/X_val.npy
-    - data/windows/y_val.npy
-    - data/windows/X_test.npy
-    - data/windows/y_test.npy
-    - params.yaml
-    - scripts/train_lstm.py
+      - scripts/train_lstm.py
+      - data/features/features.parquet
+      - params.yaml
     outs:
-    - models/lstm.pt
+      - models/lstm
     metrics:
-    - metrics/lstm.json:
-        cache: false
-  select_champion:
-    cmd: python scripts/select_champion.py
+      - reports/metrics/lstm.json:
+          cache: false
+
+  evaluate:
+    cmd: python scripts/evaluate.py --params params.yaml
     deps:
-    - metrics/metrics.json
-    - metrics/xgb.json
-    - metrics/lstm.json
-    - scripts/select_champion.py
-    outs:
-    - models/champion.json
-plots:
-- metrics/xgb.json:
-    x: curvesteps
-    y: curves.validation.rmse
-    title: XGB validation RMSE
-    template: simple
-    x_label: step
-    y_label: rmse
-- metrics/lstm.json:
-    x: curves.epoch
-    y: curves.val_rmse
-    title: LSTM validation RMSE
-    template: simple
-    x_label: epoch
-    y_label: rmse
-- metrics/xgb.json:
-    x: curvesteps
-    y: curves.validation.rmse
-    title: XGB validation RMSE
-    template: simple
-    x_label: step
-    y_label: rmse
-- metrics/lstm.json:
-    x: curves.epoch
-    y: curves.val_rmse
-    title: LSTM validation RMSE
-    template: simple
-    x_label: epoch
-    y_label: rmse
+      - scripts/evaluate.py
+      - reports/metrics/arima.json
+      - reports/metrics/xgb.json
+      - reports/metrics/lstm.json
+      - params.yaml
+    metrics:
+      - reports/metrics/summary.json:
+          cache: false
