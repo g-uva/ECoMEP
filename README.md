@@ -1,5 +1,13 @@
 # 🌱🌍♻️ WP6.2 Multi-Level Heterogeneous ML Pipeline (GreenDIGIT Project)
 
+*This work is funded from the European Union’s Horizon Europe research and innovation programme through the [GreenDIGIT project](https://greendigit-project.eu/), under the grant agreement No. [101131207](https://cordis.europa.eu/project/id/101131207)*.
+
+<div style="display:flex;align-items:center;width:100%;margin-bottom:20px;">
+  <img src="static/EN-Funded-by-the-EU-POS-2.png" alt="EU Logo" width="250px">
+  <img src="static/cropped-GD_logo.png" alt="GreenDIGIT Logo" width="110px" style="margin-right:100px">
+</div>
+
+
 >**Disclaimer**: the information on this README is still temporary. The tools, architecture and other specifications are subject to change.
 
 > Part of GreenDIGIT WP6.2 — Predictive AI for Federated Energy-Aware Workflows  
